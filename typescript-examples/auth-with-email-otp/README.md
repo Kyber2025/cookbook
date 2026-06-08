@@ -17,7 +17,7 @@ Authentication example using email-based OTP verification with Resend.
 
 ### Prerequisites (IDE only)
 
-- A Resend account with a "Receiving Emails" inbox configured (used to receive OTPs).
+- A [Resend](https://resend.com) account with a "Receiving Emails" inbox configured (used to receive OTPs).
 - Add your Resend API key to the environment as `RESEND_API_KEY`. See [Environment variables and secrets](https://intunedhq.com/docs/main/02-features/environment-variables-secrets#create-an-environment-variable) for instructions.
 
 <!-- IDE-IGNORE-START -->
