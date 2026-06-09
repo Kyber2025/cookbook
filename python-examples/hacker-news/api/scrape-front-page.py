@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 from playwright.async_api import Page
-from utils import scrape_front_page
+from utils.hn import scrape_front_page
 
 
 class Params(TypedDict, total=False):

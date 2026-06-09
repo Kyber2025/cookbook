@@ -2,7 +2,7 @@ import datetime
 from typing import TypedDict
 
 from playwright.async_api import Page
-from utils import scrape_front_page
+from utils.hn import scrape_front_page
 from utils.llm import enrich_stories
 from utils.telegram import build_digest_message, send_message
 
