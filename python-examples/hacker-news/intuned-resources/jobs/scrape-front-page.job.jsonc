@@ -1,0 +1,23 @@
+{
+  // Job definition for the daily Hacker News front-page scrape.
+  //
+  // The actual schedule (e.g. run every day at 13:00 UTC) is configured when you
+  // create the Job/Trigger on the Intuned platform — see this project's README
+  // for the daily-schedule instructions. This file defines the payload that the
+  // daily job runs.
+  // https://intunedhq.com/docs/main/02-features/jobs-batched-executions
+  "configuration": {
+    "maxConcurrentRequests": 1,
+    "retry": {
+      "maximumAttempts": 3
+    }
+  },
+  "payload": [
+    {
+      "apiName": "scrape-front-page",
+      "parameters": {
+        "pages": 1
+      }
+    }
+  ]
+}

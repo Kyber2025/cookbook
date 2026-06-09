@@ -1,0 +1,31 @@
+// For more information, see our Intuned settings reference
+// https://intunedhq.com/docs/main/05-references/intuned-json
+{
+  "apiAccess": {
+    "enabled": false
+  },
+  "authSessions": {
+    "enabled": false
+  },
+  "replication": {
+    "maxConcurrentRequests": 1,
+    "size": "standard"
+  },
+  "metadata": {
+    "template": {
+      "name": "hacker-news",
+      "description": "Scrape the Hacker News front page (title, link, score, author, comments, rank) on a daily schedule",
+      "tags": [
+        "scraping",
+        "crawling",
+        "browser-sdk"
+      ]
+    },
+    "defaultRunPlaygroundInput": {
+      "apiName": "scrape-front-page",
+      "parameters": {
+        "pages": 1
+      }
+    }
+  }
+}
