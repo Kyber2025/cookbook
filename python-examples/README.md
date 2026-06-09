@@ -46,7 +46,7 @@ intuned dev run api <api-name> .parameters/api/<api-name>/default.json
 | [e-commerce-scrapingcourse](./e-commerce-scrapingcourse/) | E-commerce product scraper with pagination |
 | [e-commerce-shopify](./e-commerce-shopify/) | Shopify store product scraper |
 | [firecrawl](./firecrawl/) | Web scraping with Firecrawl library |
-| [hacker-news](./hacker-news/) | Daily Hacker News front-page scraper (title, link, score, author, comments, rank) |
+| [hacker-news](./hacker-news/) | Daily Hacker News digest: scrape the front page, translate/classify/summarize in Chinese with an LLM, and push to Telegram |
 | [hybrid-automation](./hybrid-automation/) | Hybrid automation combining Intuned Browser SDK with AI-powered tools like Stagehand and extract_structured_data |
 | [native-crawler](./native-crawler/) | Native web crawler for sitemaps and recursive link following |
 | [network-interception](./network-interception/) | Network interception for CSRF token capture and paginated API data |

@@ -108,7 +108,7 @@ intuned dev run api <api-name> .parameters/api/<api-name>/default.json
 | [e-commerce-scrapingcourse](./python-examples/e-commerce-scrapingcourse/) | E-commerce product scraper with pagination |
 | [e-commerce-shopify](./python-examples/e-commerce-shopify/) | Shopify store product scraper |
 | [firecrawl](./python-examples/firecrawl/) | Web scraping with Firecrawl library |
-| [hacker-news](./python-examples/hacker-news/) | Daily Hacker News front-page scraper (title, link, score, author, comments, rank) |
+| [hacker-news](./python-examples/hacker-news/) | Daily Hacker News digest: scrape the front page, translate/classify/summarize in Chinese with an LLM, and push to Telegram |
 | [hybrid-automation](./python-examples/hybrid-automation/) | Hybrid automation combining Intuned Browser SDK with AI-powered tools like Stagehand and extract_structured_data |
 | [native-crawler](./python-examples/native-crawler/) | Native web crawler for sitemaps and recursive link following |
 | [network-interception](./python-examples/network-interception/) | Network interception for CSRF token capture and paginated API data |

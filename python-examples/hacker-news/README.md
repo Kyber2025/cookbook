@@ -1,9 +1,14 @@
-# Hacker News Daily Scraper (Python)
+# Hacker News Daily Digest → Telegram (Python)
 
-Scrape the [Hacker News](https://news.ycombinator.com/) front page on a daily
-schedule. For each story it extracts the **rank, title, link, score, author,
-comments count, comments URL, posting age and absolute timestamp**, prints the
-results, and returns them as structured JSON.
+Scrape the [Hacker News](https://news.ycombinator.com/) front page, use an LLM
+(**gpt-5.4**) to **translate each title into Chinese, classify it, and write a
+one-line Chinese summary**, then push a grouped digest to **Telegram** — every
+morning at **09:00**.
+
+Two APIs are included:
+
+- **`scrape-front-page`** — just scrape the front page (rank, title, link, score, author, comments, age, timestamp) and print/return JSON.
+- **`daily-digest`** — scrape → LLM translate/classify/summarize (Chinese) → push to Telegram. This is the one scheduled daily.
 
 <!-- IDE-IGNORE-START -->
 ## Run on Intuned
@@ -13,64 +18,81 @@ results, and returns them as structured JSON.
 
 ## How it works
 
-Hacker News renders each story as a `tr.athing` row, with the metadata (score,
-author, comments) in the immediately following sibling row. The scraper runs a
-single in-browser DOM pass (`page.evaluate`) over all rows on the page — this
-avoids dozens of Playwright round-trips and stays resilient to missing fields
-(job posts have no score/author/comments). Set `pages` > 1 to follow the
-**More** link and scrape additional listing pages (~30 stories each).
+```text
+scrape HN front page  ──►  LLM (gpt-5.4)            ──►  Telegram Bot API
+(single DOM pass)          • 中文标题翻译                sendMessage
+                           • 分类 (AI/编程/创业/…)        (HTML, grouped by
+                           • 一句话中文摘要               category, chunked)
+```
 
-## API
+Hacker News renders each story as a `tr.athing` row, with metadata (score,
+author, comments) in the following sibling row. The scraper runs a single
+in-browser DOM pass (`page.evaluate`) over all rows — avoiding dozens of
+Playwright round-trips and staying resilient to missing fields (job posts have
+no score/author/comments). The LLM enrichment is done in **one batched call**
+for all stories and returns structured JSON. The Telegram message is grouped by
+category and split into ≤4096-char chunks.
 
-### `scrape-front-page`
+## APIs
 
-Scrapes the Hacker News front page and prints + returns the stories.
+### `daily-digest`
+
+Scrape → translate/classify/summarize in Chinese → push to Telegram.
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
-| `pages` | int | 1 | Number of listing pages to scrape (each ~30 stories). `1` = top 30. |
+| `pages` | int | 1 | Listing pages to scrape (each ~30 stories). |
+| `limit` | int | 10 | Number of top stories to translate + push. |
+| `send` | bool | true | Send to Telegram. Set `false` for a dry run (print only). |
 
-**Returns**
+### `scrape-front-page`
 
-```json
-{
-  "source": "https://news.ycombinator.com/",
-  "pages_scraped": 1,
-  "count": 30,
-  "stories": [
-    {
-      "id": "12345678",
-      "rank": 1,
-      "title": "Show HN: My new project",
-      "url": "https://example.com/article",
-      "site": "example.com",
-      "score": 256,
-      "author": "pg",
-      "comments": 87,
-      "comments_url": "https://news.ycombinator.com/item?id=12345678",
-      "age": "3 hours ago",
-      "created_at": "2026-06-09T10:00:00"
-    }
-  ]
-}
-```
+Scrape only — prints and returns the raw stories.
+
+| Parameter | Type | Default | Description |
+| --------- | ---- | ------- | ----------- |
+| `pages` | int | 1 | Listing pages to scrape (each ~30 stories). `1` = top 30. |
 
 ## Project Structure
 
 ```text
 hacker-news/
 ├── api/
-│   └── scrape-front-page.py        # Main API: scrape HN front page stories
+│   ├── daily-digest.py             # Scrape → LLM enrich → push to Telegram
+│   └── scrape-front-page.py        # Scrape-only API
+├── utils/
+│   ├── __init__.py
+│   ├── hn.py                       # HN scraping (single-DOM-pass extraction)
+│   ├── llm.py                      # OpenAI-compatible Chinese translate/classify/summarize
+│   └── telegram.py                 # Telegram Bot API message build + send
 ├── intuned-resources/
 │   └── jobs/
-│       └── scrape-front-page.job.jsonc  # Job payload for the daily run
+│       └── daily-digest.job.jsonc  # Job payload for the daily run
 ├── .parameters/api/
-│   └── scrape-front-page/
-│       └── default.json            # Default parameters for local runs
-├── .env.example
-├── Intuned.jsonc                   # Intuned project configuration
+│   ├── daily-digest/default.json
+│   └── scrape-front-page/default.json
+├── .env.example                    # Copy to .env and fill in secrets
+├── Intuned.jsonc
 └── README.md
 ```
+
+## Envs
+
+Copy `.env.example` to `.env` and fill in your values. **`.env` is gitignored — never commit it.**
+
+| Variable | Required | Description |
+| -------- | -------- | ----------- |
+| `OPENAI_API_KEY` | yes (for digest) | OpenAI (or compatible) API key used for translation/classification/summary. |
+| `OPENAI_MODEL` | no | LLM model. Default `gpt-5.4`. |
+| `OPENAI_BASE_URL` | no | OpenAI-compatible API base. Default `https://api.openai.com/v1`. |
+| `TELEGRAM_BOT_TOKEN` | yes (for digest) | Telegram bot token from @BotFather. |
+| `TELEGRAM_APPROVAL_CHAT_ID` | yes (for digest) | Chat/group/channel id the digest is sent to. |
+| `TELEGRAM_API_BASE_URL` | no | Telegram API base. Default `https://api.telegram.org`. |
+| `TELEGRAM_WEBHOOK_SECRET` | no | Only needed if you add a Telegram webhook/approval flow on top of this. |
+| `INTUNED_API_KEY` | for deploy/jobs | Intuned API key. Not needed for local `intuned dev run`. |
+
+> If `OPENAI_API_KEY` is missing or the LLM call fails, the digest degrades
+> gracefully — it still sends the (untranslated) stories instead of crashing.
 
 <!-- IDE-IGNORE-START -->
 ## Getting Started
@@ -87,67 +109,46 @@ If the `intuned` CLI is not installed, install it globally:
 npm install -g @intuned/cli
 ```
 
-After installing dependencies, the `intuned` command should be available in your
-environment.
-
-### Run an API
+### Run the digest (dry run — no Telegram send)
 
 ```bash
-intuned dev run api scrape-front-page .parameters/api/scrape-front-page/default.json
+intuned dev run api daily-digest .parameters/api/daily-digest/default.json --headless
 ```
 
-Run headless (no visible browser window):
+Edit `.parameters/api/daily-digest/default.json` and set `"send": false` to
+preview the message without pushing, or `"send": true` to actually push.
+
+### Run the scraper only
 
 ```bash
 intuned dev run api scrape-front-page .parameters/api/scrape-front-page/default.json --headless
 ```
-
-Scrape more than the top 30 by editing `.parameters/api/scrape-front-page/default.json`:
-
-```json
-{
-  "pages": 3
-}
-```
 <!-- IDE-IGNORE-END -->
 
-## Running daily
+## Running daily (every morning at 09:00)
 
-This project ships a job definition at
-`intuned-resources/jobs/scrape-front-page.job.jsonc` that runs the
-`scrape-front-page` API. To run it **once per day**, create a scheduled Job /
-Trigger on the Intuned platform and point it at this job — the schedule (cron,
-e.g. `0 13 * * *` for 13:00 UTC daily) is configured on the platform, not in
-this file. See the
-[Jobs documentation](https://intunedhq.com/docs/main/02-features/jobs-batched-executions)
-for scheduling details.
+The job at `intuned-resources/jobs/daily-digest.job.jsonc` defines the payload.
+To run it once per day at 09:00, create a **scheduled Job/Trigger** on the
+Intuned platform with cron `0 9 * * *` (adjust for your timezone) pointing at
+this job — the schedule lives on the platform, not in the job file. See the
+[Jobs documentation](https://intunedhq.com/docs/main/02-features/jobs-batched-executions).
 
-You can also trigger a job run via the API:
+You can also trigger a run via the API:
 
 ```bash
 curl -X POST "https://api.intunedhq.com/projects/{project}/jobs" \
   -H "Authorization: Bearer {api_key}" \
   -d '{
     "payload": {
-      "api": "scrape-front-page",
-      "parameters": { "pages": 1 }
-    },
-    "sink": {
-      "type": "webhook",
-      "url": "https://your-webhook.com/results"
+      "api": "daily-digest",
+      "parameters": { "pages": 1, "limit": 10, "send": true }
     }
   }'
 ```
-
-## Envs
-
-| Variable | Required | Description |
-| -------- | -------- | ----------- |
-| `INTUNED_API_KEY` | For deploy/job runs | Your Intuned API key. Not needed for local `intuned dev run` against a provisioned project. |
 
 ## Related
 
 - [Intuned CLI](https://intunedhq.com/docs/main/05-references/cli/overview)
 - [Intuned Browser SDK](https://intunedhq.com/docs/automation-sdks/overview)
 - [Intuned Jobs Documentation](https://intunedhq.com/docs/main/02-features/jobs-batched-executions)
-- [Intuned llm.txt](https://intunedhq.com/docs/llms.txt)
+- [Telegram Bot API](https://core.telegram.org/bots/api#sendmessage)

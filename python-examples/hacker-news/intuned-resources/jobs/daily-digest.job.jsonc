@@ -1,0 +1,24 @@
+{
+  // Daily Hacker News digest pushed to Telegram.
+  //
+  // This file defines the PAYLOAD that the job runs. The daily 09:00 schedule
+  // itself is configured when you create a scheduled Job/Trigger on the Intuned
+  // platform (cron: "0 9 * * *"). See the project README ("Running daily") and
+  // https://intunedhq.com/docs/main/02-features/jobs-batched-executions
+  "configuration": {
+    "maxConcurrentRequests": 1,
+    "retry": {
+      "maximumAttempts": 3
+    }
+  },
+  "payload": [
+    {
+      "apiName": "daily-digest",
+      "parameters": {
+        "pages": 1,
+        "limit": 10,
+        "send": true
+      }
+    }
+  ]
+}

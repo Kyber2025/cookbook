@@ -14,7 +14,7 @@
   "metadata": {
     "template": {
       "name": "hacker-news",
-      "description": "Scrape the Hacker News front page (title, link, score, author, comments, rank) on a daily schedule",
+      "description": "Daily Hacker News digest: scrape the front page, translate/classify/summarize with an LLM in Chinese, and push to Telegram",
       "tags": [
         "scraping",
         "crawling",
@@ -22,9 +22,11 @@
       ]
     },
     "defaultRunPlaygroundInput": {
-      "apiName": "scrape-front-page",
+      "apiName": "daily-digest",
       "parameters": {
-        "pages": 1
+        "pages": 1,
+        "limit": 10,
+        "send": false
       }
     }
   }
